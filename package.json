@@ -1,0 +1,30 @@
+{
+  "name": "health-buddy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "worker:dev": "pnpm --filter api run worker:dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.10.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "tsx": "^4.23.0",
+    "turbo": "^2.10.4",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "dotenv-cli": "^11.0.0"
+  }
+}
