@@ -38,3 +38,16 @@ model Summary {
   @@index([sessionId, createAt])
   @@map("summaries")
 }
+
+model Checkin {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  sleep     Int?
+  energy    Int?
+  moved     Boolean?
+  note      String?
+  createAt  DateTime @default(now()) @map("create_at")
+
+  @@index([sessionId, createAt])
+  @@map("checkins")
+}
