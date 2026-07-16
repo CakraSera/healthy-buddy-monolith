@@ -16,10 +16,27 @@ const SUGGESTIONS = [
   "What's a simple way to eat healthier?",
 ];
 
+function getSessionId() {
+  let id = localStorage.getItem("health-buddy-session-id");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("health-buddy-session-id", id);
+  }
+  return id;
+}
+
 function Home() {
   const [input, setInput] = useState("");
   const { send, messages, status } = useChat({
     endpoint: "http://localhost:8000/chat",
+    // ! Research codes below
+    createRequest: ({ coreMessages }) => ({
+      messages: coreMessages,
+      stream: true,
+      metadata: {
+        sessionId: getSessionId(),
+      },
+    }),
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const isStreaming = status === "streaming";
@@ -138,8 +155,7 @@ function EmptyState({ onPick }: { onPick: (value: string) => void }) {
       <div className="space-y-1.5">
         <h2 className="text-lg font-semibold">How are you feeling today?</h2>
         <p className="text-sm text-muted-foreground">
-          I can help with sleep, nutrition basics, gentle movement, and
-          stress.
+          I can help with sleep, nutrition basics, gentle movement, and stress.
         </p>
       </div>
       <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2">

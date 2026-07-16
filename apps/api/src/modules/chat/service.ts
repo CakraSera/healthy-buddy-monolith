@@ -1,4 +1,7 @@
-import { createCompletionStream } from "@anvia/core/completion";
+import {
+  createCompletionStream,
+  createParsedCompletion,
+} from "@anvia/core/completion";
 import { createEventStream } from "@anvia/server";
 import { z } from "zod";
 import { prisma } from "../../utils/prisma.js";
@@ -23,7 +26,7 @@ const ActionDecisionSchema = z.object({
 });
 
 async function decideAction(userInput: string) {
-  const decision = await createdParsedCompletion(getModel(), {
+  const decision = await createParsedCompletion(getModel(), {
     instructions: `
       Decide the next action before answering the user.
 
@@ -59,10 +62,32 @@ export async function getCoachResponse(userInput: string, sessionId: string) {
     .map((msg) => `${msg.role}: ${msg.content}`)
     .join("\n");
 
-  const model = getModel();
-  console.log("User Input:", userInput);
-  const stream = createCompletionStream(model, {
-    input: userInput,
+  const decision = await decideAction(userInput);
+  let actionNote = "";
+
+  if (decision.action === "log_checkin") {
+    await prisma.checkin.create({
+      data: {
+        sessionId,
+        sleep: decision.checkin.energy,
+        energy: decision.checkin.energy,
+        moved: decision.checkin.moved,
+        note: decision.checkin.note,
+      },
+    });
+    actionNote =
+      "\n\nNote: you just silently saved the user's check-in. Do NOT announce it. Reply naturally to what they said.";
+  } else if (decision.action === "request_weekly_summary") {
+    const summary = await prisma.summary.create({
+      data: { sessionId, status: "pending" },
+    });
+    await summaryQueue.add("summary", { summaryId: summary.id, sessionId });
+    actionNote =
+      "\n\nNote: a weekly summary is now being prepared in the background. Tell the user it will be ready shortly.";
+  }
+  const stream = createCompletionStream(getModel(), {
+    instructions: COACH_PERSONA + actionNote,
+    input: `Recent conversation: \n${historyText}\n\nUser message: ${userInput}`,
   });
   return createEventStream(stream, {
     format: "jsonl",
