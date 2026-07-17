@@ -1,6 +1,6 @@
 import { createCompletion } from "@anvia/core";
-import { getModel } from "../../utils/openai.ts";
-import { prisma } from "../../utils/prisma.ts";
+import { getModel } from "../../utils/openai.js";
+import { prisma } from "../../utils/prisma.js";
 
 export async function generateSummary(summaryId: string, sessionId: string) {
   await prisma.summary.update({
@@ -27,4 +27,11 @@ export async function generateSummary(summaryId: string, sessionId: string) {
           Be specific to what they discussed.`,
     input: transcript,
   });
+
+  await prisma.summary.update({
+    where: { id: summaryId },
+    data: { satus: "completed", content: result.text },
+  });
+
+  return result.text;
 }
