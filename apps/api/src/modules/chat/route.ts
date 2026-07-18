@@ -19,11 +19,12 @@ function lastUserText(messages: any[]): string {
 chatRoute.post("/", async (c) => {
   const body = await c.req.json();
 
+  console.log({ body });
   const sessionId: string = body?.metadata?.sessionId ?? "anonymous";
   const userInput = lastUserText(body?.messages ?? []);
 
   if (!userInput) return c.json({ error: "Empty message" }, 400);
 
-  return await getCoachResponse(sessionId, userInput);
+  return await getCoachResponse(userInput, sessionId);
 });
 export default chatRoute;

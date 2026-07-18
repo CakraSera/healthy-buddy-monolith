@@ -26,6 +26,7 @@ const ActionDecisionSchema = z.object({
 });
 
 async function decideAction(userInput: string) {
+  console.log("Deciding action for user input:", userInput);
   const decision = await createParsedCompletion(getModel(), {
     instructions: `
       Decide the next action before answering the user.
@@ -47,6 +48,7 @@ async function decideAction(userInput: string) {
 }
 
 export async function getCoachResponse(userInput: string, sessionId: string) {
+  console.log({ userInput, sessionId });
   await prisma.message.create({
     data: { sessionId, role: "user", content: userInput },
   });
